@@ -1,6 +1,6 @@
 # 2026_Li_et_al
 #### Scripts for:<br/>
-#### Reduction of BEX genes in Alzheimer's Disease<br/>
+#### Reduced Expression of BEX Genes in Alzheimer's Disease<br/>
 <br/>
 Authors:<br/>
 Li Li<sup>1</sup>, Eliana Kenner<sup>1</sup>, Lei Wan<sup>1</sup>, Zhen Yan<sup>1,2</sup>, Jian Feng<sup>1,2#</sup><br/>
