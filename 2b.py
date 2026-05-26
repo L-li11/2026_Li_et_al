@@ -87,10 +87,15 @@ df = df.T.merge(df_info, left_index=True, right_index=True)
 # find target probes
 df_annot[df_annot['Gene name'].str.contains('BEX')][['ID','Gene name']]
 
+# select subject age > 60 yrs
+df = df[df['age']!='NA']
+df['age']= df['age'].astype(float)
+df = df[df['age']>60]
+
 # check subject number
 df.groupby(['source']).count()
 
-# make figure
+# make figure 2b
 plt.figure(figsize=(6,2.8))
 lst_p=[]
 for (pos, prob) in zip(range(5),['GI_15147227-S','GI_7657043-S','GI_37546229-S','GI_29744077-S','GI_7669491-S']):
@@ -130,4 +135,55 @@ plt.annotate('p='+'{:.2e}'.format(lst_p[1]), xy=(0.6,14), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[2]), xy=(1.6,14), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[3]), xy=(2.6,11), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[4]), xy=(3.6,14.2), fontsize=10)
-plt.savefig('figures/GSE15222_bex.svg', bbox_inches='tight', pad_inches=0.5)
+
+# make figure S2b
+fig = plt.figure(figsize=(6,2.8))
+ax = fig.add_subplot(1, 1, 1)
+lst_p=[]
+for (pos, prob) in zip(range(5),['GI_15147227-S','GI_7657043-S','GI_37546229-S','GI_29744077-S','GI_7669491-S']):
+    plt.boxplot(df[df['source'].str.contains('normal')&(df['sex']=='male')][prob], 
+                positions=[pos*2-0.3], notch=False, patch_artist=True, showfliers=False,zorder=0,
+        boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+        capprops=dict(color='black', linewidth=1.5, alpha=1),
+        whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+        medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[df['source'].str.contains('normal')&(df['sex']=='female')][prob], 
+            positions=[pos*2+0.1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[df['source'].str.contains('Alzh')&(df['sex']=='male')][prob], 
+            positions=[pos*2+0.6], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[df['source'].str.contains('Alzh')&(df['sex']=='female')][prob], 
+            positions=[pos*2+1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+plt.xticks([0.5,2.5,4.5,6.5,8.5],['BEX1','BEX3','BEX4','BEX5','GAPDH'], fontsize=13);
+plt.yticks(fontsize=13)
+plt.ylim(top=15.8)
+plt.ylabel('Normalized signal', fontsize=13)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.spines['left'].set_linewidth(1.5)
+ax.spines['bottom'].set_linewidth(1.5)
+plt.tick_params(width=1.5)
+
+# statistical test for probe detecting BEX1
+result = scheirer_ray_hare(
+    data=df[['sex','diagnosis','GI_15147227-S']].rename(columns={'GI_15147227-S':'BEX1'}),
+    response='BEX1',
+    factor_a='diagnosis',
+    factor_b='sex')
+result = stats.spearmanr(df[(df['source'].str.contains('normal'))]['age'], 
+                        df[(df['source'].str.contains('normal'))]['GI_15147227-S'])

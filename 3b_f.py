@@ -97,6 +97,61 @@ def t_plot(dfctrl, dfad, gene,name,top=10,bottom=0,annot=0,x=0,y=0,):
     plt.annotate('p='+'{:.2}'.format(b), xy=(x,y), fontsize=10)
     plt.ylim(bottom=bottom, top=top)
 
+def t_plot_sex(dfctrl, dfad, gene,name,top=10,bottom=0):
+    fig = plt.figure(figsize=(4,2.3))
+    ax = fig.add_subplot(1, 1, 1)
+    ary=np.zeros((12,4))
+    d_age={'4mon':0, '8mon':1, '12mon':2, '18mon':3}
+    for a,b in dfctrl.groupby('age'):
+        plt.scatter(d_age[a]-0.33+0.1*swarm(b[b['sex']=='Male'][gene].to_numpy(),4), 
+                    b[b['sex']=='Male'][gene],color='white', alpha=0.7, edgecolor='black',s=7, linewidths=1)
+        plt.scatter(d_age[a]-0.13+0.1*swarm(b[b['sex']=='Female'][gene].to_numpy(),4), 
+                    b[b['sex']=='Female'][gene],color='white', alpha=0.7, edgecolor='grey',s=7, linewidths=1)
+        ary[0, d_age[a]] = d_age[a]-0.33
+        ary[1, d_age[a]] = b[b['sex']=='Male'][gene].mean()
+        ary[2, d_age[a]] = b[b['sex']=='Male'][gene].std()
+        ary[3, d_age[a]] = d_age[a]-0.13
+        ary[4, d_age[a]] = b[b['sex']=='Female'][gene].mean()
+        ary[5, d_age[a]] = b[b['sex']=='Female'][gene].std()
+    plt.errorbar(ary[0,:], ary[1,:], yerr=ary[2,:], elinewidth = 1.5,fmt='none',
+                 color = 'black', capsize = 3, alpha = 0.7, capthick=1.5)
+    plt.errorbar(ary[0,:], ary[1,:], xerr=0.1, elinewidth = 2,fmt='none',
+                 color = '#1f0099', capsize = 0, alpha = 0.6)
+    plt.errorbar(ary[3,:], ary[4,:], yerr=ary[5,:], elinewidth = 1.5,fmt='none',
+                 color = 'grey', capsize = 3, alpha = 0.7, capthick=1.5)
+    plt.errorbar(ary[3,:], ary[4,:], xerr=0.1, elinewidth = 2,fmt='none',
+                 color = '#1f0099', capsize = 0, alpha = 0.6)
+
+    for c,d in dfad.groupby('age'):
+        plt.scatter(d_age[c]+0.13+0.1*swarm(d[d['sex']=='Male'][gene].to_numpy(),4), 
+                    d[d['sex']=='Male'][gene], color='white', alpha=0.7, edgecolor='black',s=7, linewidths=1)
+        plt.scatter(d_age[c]+0.33+0.1*swarm(d[d['sex']=='Female'][gene].to_numpy(),4), 
+                    d[d['sex']=='Female'][gene], color='white', alpha=0.7, edgecolor='grey',s=7, linewidths=1)
+        ary[6, d_age[c]] = d_age[c]+0.13
+        ary[7, d_age[c]] = d[d['sex']=='Male'][gene].mean()
+        ary[8, d_age[c]] = d[d['sex']=='Male'][gene].std()  
+        ary[9, d_age[c]] = d_age[c]+0.33
+        ary[10, d_age[c]] = d[d['sex']=='Female'][gene].mean()
+        ary[11, d_age[c]] = d[d['sex']=='Female'][gene].std()
+    plt.errorbar(ary[6,:], ary[7,:], yerr=ary[8,:], elinewidth = 1.5,fmt='none',
+                 color = 'black', capsize = 3, alpha = 0.7, capthick=1.5)
+    plt.errorbar(ary[6,:], ary[7,:], xerr=0.1, elinewidth = 2,fmt='none',
+                 color = '#ee0015', capsize = 0, alpha = 0.6)
+    plt.errorbar(ary[9,:], ary[10,:], yerr=ary[11,:], elinewidth = 1.5,fmt='none',
+                 color = 'grey', capsize = 3, alpha = 0.7, capthick=1.5)
+    plt.errorbar(ary[9,:], ary[10,:], xerr=0.1, elinewidth = 2,fmt='none',
+                 color = '#ee0015', capsize = 0, alpha = 0.6)
+    
+    plt.xticks([0,1,2,3],['4Mo.','8Mo.','12Mo.','18Mo.'], fontsize=13);
+    plt.yticks(fontsize=13)
+    plt.ylabel(name+' log(TPM)', fontsize=13)
+    plt.ylim(bottom=bottom, top=top)
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.spines['left'].set_linewidth(1.5)
+    ax.spines['bottom'].set_linewidth(1.5)
+    plt.tick_params(width=1.5)
+
 
 df = pd.read_csv('GSE168137/GSE168137_expressionList.txt', sep='\t')
 sid = [n.split('_')[-1] for n in df.columns[1:]]
@@ -126,10 +181,17 @@ dfad = df[(df['genotype']=='5xFAD;BL6')&(df['tissue']=='cortex')][[gened['Bex1']
 plt.figure(figsize=(4.5,2.8))
 t_plot(dfctrl, dfad, gened['Bex1'],'Bex1', bottom=6,top=9, x=3.6, y=8.5)
 
+# make figure S3a
+dfctrl = df[(df['genotype']=='BL6')&(df['tissue']=='cortex')][[gened['Bex1'],'age','sex']]
+dfad = df[(df['genotype']=='5xFAD;BL6')&(df['tissue']=='cortex')][[gened['Bex1'],'age','sex']]
+t_plot_sex(dfctrl, dfad, gened['Bex1'],'Bex1', bottom=6,top=9)
+plt.yticks([6,7,8,9],[6,7,8,9],fontsize=13);
+
 # stats
-danova = pd.melt(df[df['tissue']=='cortex'][['genotype',gened['Bex1'],'age']], 
-                id_vars=['age','genotype'], value_vars=[gened['Bex1']])
-model = ols('value ~ C(genotype) + C(age) + C(genotype):C(age)', data = danova).fit()
+danova = pd.melt(df[df['tissue']=='cortex'][['genotype',gened['Bex1'],'age','sex']], 
+                id_vars=['age','genotype','sex'], value_vars=[gened['Bex1']])
+model = ols('value ~ C(genotype) + C(sex)+ C(age) + C(genotype):C(sex) + C(genotype):C(age) + C(sex):C(age)+ C(genotype):C(sex):C(age)', 
+            data = danova).fit()
 anova_table = sm.stats.anova_lm(model, typ=2)
 print(anova_table)
 

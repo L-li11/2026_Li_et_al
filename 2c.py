@@ -50,7 +50,7 @@ df_annot = df_annot.merge(dfid[['Entrez_Gene_ID','Gene name']],
 for n in df_annot[df_annot['Gene name'].isna()].index:
     df_annot.loc[n,'Gene name'] = df_annot.loc[n,'Gene Symbol']
 
-dfctx = df[(~df['region'].str.contains('hippocampus'))&(df['age']>=69)]
+dfctx = df[(~df['region'].str.contains('hippocampus'))&(df['age']>60)]
 
 # check number of subjects and samples
 dfctx.groupby(['disease','region']).count()
@@ -59,7 +59,7 @@ dfctx.groupby(['disease','subject']).count()
 # find target probes
 df_annot[df_annot['Gene name'].str.contains('BEX')][['ID','Gene name']]
 
-# make figure
+# make figure 2c
 plt.figure(figsize=(6,2.8))
 lst_p=[]
 for (pos, prob) in zip(range(6),['218332_at','224367_at','217963_s_at','215440_s_at','229963_at','212581_x_at']):
@@ -100,4 +100,97 @@ plt.annotate('p='+'{:.2}'.format(lst_p[2]), xy=(1.6,1.5), fontsize=10)
 plt.annotate('p='+'{:.2}'.format(lst_p[3]), xy=(2.6,1.9), fontsize=10)
 plt.annotate('p='+'{:.2}'.format(lst_p[4]), xy=(3.8,1.8), fontsize=10)
 plt.annotate('p='+'{:.2}'.format(lst_p[5]), xy=(4.8,1.5), fontsize=10)
-plt.savefig('figures/GSE48350_bex.svg', bbox_inches='tight', pad_inches=0.5)
+
+# make figure S2c
+fig = plt.figure(figsize=(6,2.8))
+ax = fig.add_subplot(1, 1, 1)
+lst_p=[]
+for (pos, prob) in zip(range(6),['218332_at','224367_at','217963_s_at','215440_s_at','229963_at','212581_x_at','224590_at']):
+    plt.boxplot(dfctx[(dfctx['disease']=='Ctrl')&(dfctx['sex']=='male')][prob], 
+            positions=[pos*2-0.3], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+    
+    plt.boxplot(dfctx[(dfctx['disease']=='Ctrl')&(dfctx['sex']=='female')][prob], 
+            positions=[pos*2+0.1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(dfctx[(dfctx['disease']=='AD')&(dfctx['sex']=='male')][prob], 
+            positions=[pos*2+0.6], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(dfctx[(dfctx['disease']=='AD')&(dfctx['sex']=='female')][prob], 
+            positions=[pos*2+1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+plt.xticks([0.5,2.5,4.5,6.5,8.5, 10.5],['BEX1','BEX2','BEX3','BEX4','BEX5','GAPDH'], fontsize=13);
+plt.yticks(fontsize=13)
+plt.ylim(top=2.2)
+plt.ylabel('Normalized signal', fontsize=13)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.spines['left'].set_linewidth(1.5)
+ax.spines['bottom'].set_linewidth(1.5)
+plt.tick_params(width=1.5)
+
+# make figure S2c XIST as sex reference
+fig = plt.figure(figsize=(1.5,2.8))
+ax = fig.add_subplot(1, 1, 1)
+lst_p=[]
+for (pos, prob) in zip(range(1),['224590_at']):
+    plt.boxplot(dfctx[(dfctx['disease']=='Ctrl')&(dfctx['sex']=='male')][prob], 
+            positions=[pos*2-0.3], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+    
+    plt.boxplot(dfctx[(dfctx['disease']=='Ctrl')&(dfctx['sex']=='female')][prob], 
+            positions=[pos*2+0.1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(dfctx[(dfctx['disease']=='AD')&(dfctx['sex']=='male')][prob], 
+            positions=[pos*2+0.6], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(dfctx[(dfctx['disease']=='AD')&(dfctx['sex']=='female')][prob], 
+            positions=[pos*2+1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+plt.xticks([0.5],['XIST'], fontsize=13);
+plt.yticks(fontsize=13)
+plt.ylim(top=199, bottom=-2)
+plt.ylabel('Normalized signal', fontsize=13)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.spines['left'].set_linewidth(1.5)
+ax.spines['bottom'].set_linewidth(1.5)
+plt.tick_params(width=1.5)
+
+# statistical test for probe detecting BEX1
+prob = '218332_at'
+result = scheirer_ray_hare(data=dfctx[['sex','disease',prob]],
+                            response=prob,
+                            factor_a='disease',
+                            factor_b='sex')
+result = stats.spearmanr(dfctx[dfctx['disease']=='Ctrl']['age'], dfctx[dfctx['disease']=='Ctrl'][prob])

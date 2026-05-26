@@ -50,6 +50,11 @@ df = df_value.T.merge(df_info, left_index=True, right_index=True)
 # find target probes
 df_annot[df_annot['Gene name'].str.contains('BEX')][['ID','Gene name']]
 
+# select subject age > 60 yrs
+df = df[df['age']!='NA']
+df['age']= df['age'].astype(float)
+df = df[df['age']>60]
+
 # stats
 for (pos, prob) in zip(range(6),['10023814134','10023834317','10023820028','10023826060','10023819992','10023809544']):
     _,p1 = stats.shapiro(df[df['disease']=='N'][prob])
@@ -62,7 +67,7 @@ for (pos, prob) in zip(range(6),['10023814134','10023834317','10023820028','1002
 # check subject number
 df.groupby(['disease']).count()
 
-# make figure
+# make figure 2a
 plt.figure(figsize=(6,2.8))
 lst_p=[]
 for (pos, prob) in zip(range(6),['10023814134','10023834317','10023820028','10023826060','10023819992','10023809544']):
@@ -103,4 +108,99 @@ plt.annotate('p='+'{:.2e}'.format(lst_p[2]), xy=(1.6,0.4), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[3]), xy=(2.6,0.25), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[4]), xy=(3.6,0.4), fontsize=10)
 plt.annotate('p='+'{:.2e}'.format(lst_p[5]), xy=(4.6,0.55), fontsize=10)
-plt.savefig('figures/GSE44770_bex.svg', bbox_inches='tight', pad_inches=0.5)
+
+# make figure S2a
+fig = plt.figure(figsize=(6,2.8))
+ax = fig.add_subplot(1, 1, 1)
+lst_p=[]
+for (pos, prob) in zip(range(6),['10023814134','10023834317','10023820028','10023826060','10023819992','10023809544']):
+    plt.boxplot(df[(df['disease']=='N')&(df['sex']=='M')][prob], 
+                positions=[pos*2-0.3], notch=False, patch_artist=True, showfliers=False,zorder=0,
+        boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+        capprops=dict(color='black', linewidth=1.5, alpha=1),
+        whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+        medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='N')&(df['sex']=='F')][prob], 
+            positions=[pos*2+0.1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='A')&(df['sex']=='M')][prob], 
+            positions=[pos*2+0.6], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='A')&(df['sex']=='F')][prob], 
+            positions=[pos*2+1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+plt.xticks([0.5,2.5,4.5,6.5,8.5, 10.5],['BEX1','BEX2','BEX3','BEX4','BEX5','GAPDH'], fontsize=13);
+plt.yticks(fontsize=13)
+plt.ylim(top=0.7)
+plt.ylabel('Normalized signal', fontsize=13)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.spines['left'].set_linewidth(1.5)
+ax.spines['bottom'].set_linewidth(1.5)
+plt.tick_params(width=1.5)
+
+# make figure S2a XIST as sex reference
+fig = plt.figure(figsize=(1.5,2.8))
+ax = fig.add_subplot(1, 1, 1)
+lst_p=[]
+for (pos, prob) in zip(range(1),['10033669034']):
+    plt.boxplot(df[(df['disease']=='N')&(df['sex']=='M')][prob], 
+                positions=[pos*2-0.3], notch=False, patch_artist=True, showfliers=False,zorder=0,
+        boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+        capprops=dict(color='black', linewidth=1.5, alpha=1),
+        whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+        medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='N')&(df['sex']=='F')][prob], 
+            positions=[pos*2+0.1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#1f0099', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='A')&(df['sex']=='M')][prob], 
+            positions=[pos*2+0.6], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='black', linewidth=1.5, alpha=1),
+    capprops=dict(color='black', linewidth=1.5, alpha=1),
+    whiskerprops=dict(color='black', linewidth=1.5, alpha=1),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+    plt.boxplot(df[(df['disease']=='A')&(df['sex']=='F')][prob], 
+            positions=[pos*2+1], notch=False, patch_artist=True, showfliers=False,zorder=0,
+    boxprops=dict(facecolor='None', color='grey', linewidth=1.5, alpha=0.7),
+    capprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    whiskerprops=dict(color='grey', linewidth=1.5, alpha=0.7),
+    medianprops=dict(color='#ee0015', alpha=0.7, linewidth=2),widths=0.3)
+
+plt.xticks([0.5],['XIST'], fontsize=13);
+plt.yticks(fontsize=13)
+plt.ylim(top=0.7)
+plt.ylabel('Normalized signal', fontsize=13)
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.spines['left'].set_linewidth(1.5)
+ax.spines['bottom'].set_linewidth(1.5)
+plt.tick_params(width=1.5)
+
+# statistical test for probe detecting BEX1
+result = scheirer_ray_hare(
+    data=df[['sex','disease','10023814134']].rename(columns={'10023814134':'BEX1'}),
+    response='BEX1',
+    factor_a='disease',
+    factor_b='sex')
+
+result = stats.spearmanr(df[df['disease']=='N']['age'].astype(float), 
+                        df[df['disease']=='N']['10023814134'].astype(float))
